@@ -33,7 +33,7 @@ namespace Endy.Bot.Commands
                 },
                 Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail
                 {
-                    Url = ctx.Member.AvatarUrl
+                    Url = member.AvatarUrl
                 }
             }
             .AddField("Name", member.Username, true)
