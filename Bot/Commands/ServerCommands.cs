@@ -22,10 +22,19 @@ namespace Endy.Bot.Commands
             foreach (var role in member.Roles)
                 roles.Append($"{role.Name}, ");
 
-            var first_embed = new DiscordEmbedBuilder
+            var embed = new DiscordEmbedBuilder
             {
                 Title = "Information card. Summary",
-                Color = DiscordColor.HotPink
+                Color = DiscordColor.HotPink,
+                Footer = new DiscordEmbedBuilder.EmbedFooter
+                {
+                    Text = $"Thanks for using Endy, {ctx.Member.Username}",
+                    IconUrl = ctx.Member.AvatarUrl
+                },
+                Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail
+                {
+                    Url = ctx.Member.AvatarUrl
+                }
             }
             .AddField("Name", member.Username, true)
             .AddField("Server name", member.DisplayName, true)
@@ -39,35 +48,33 @@ namespace Endy.Bot.Commands
             .AddField("Current server", member.Guild.Name, true)
             .AddField("Status", member.Presence.Status.ToString(), true)
             //.AddField("Activity", member.Presence.Activity.Name ?? "no activity", true)
-            .AddField("Roles", roles.ToString(), false);
-
-            var second_embed = new DiscordEmbedBuilder
-            {
-                Title = "Information card. Urls",
-                Color = DiscordColor.HotPink
-            }
+            .AddField("Roles", roles.ToString(), false)
             .AddField("Avatar url", member.AvatarUrl ?? "absent")
             .AddField("Guild avatar url", member.Guild.IconUrl ?? "absent");
 
-            await ctx.Channel.SendPaginatedMessageAsync(
-                    member, new List<Page>() {
-                        new Page { Embed = first_embed },
-                        new Page { Embed = second_embed }
-                    },
-                    new PaginationButtons
+            await ctx.Channel.SendMessageAsync(embed)
+                .ConfigureAwait(false);
+        }
+
+        [Command("clear")]
+        [Aliases("c")]
+        [RequirePermissions(Permissions.Administrator)]
+        public async Task Clear(CommandContext ctx, int amount)
+        {
+            await ctx.Channel.DeleteMessagesAsync(
+                    await ctx.Channel.GetMessagesAsync(amount + 1).ConfigureAwait(false)
+                ).ConfigureAwait(false);
+
+            var message = await ctx.Channel.SendMessageAsync(
+                    new DiscordEmbedBuilder
                     {
-                        Right = new DiscordButtonComponent(
-                                ButtonStyle.Primary, "right", "Next page"
-                            ),
-                        Left = new DiscordButtonComponent(
-                                ButtonStyle.Primary, "left", "Previous page"
-                            ),
-                        Stop = new DiscordButtonComponent(
-                                ButtonStyle.Danger, "stop", "Stop reading"
-                            ),
-                        SkipLeft = null,
-                        SkipRight = null,
-                    }, deletion: ButtonPaginationBehavior.DeleteButtons);
+                        Color = DiscordColor.Blue,
+                        Description = "The deletion operation has been completed successfully.\nThis message will be automatically removed in 5 second"
+                    }
+                ).ConfigureAwait(false);
+
+            await Task.Delay(5000);
+            await ctx.Channel.DeleteMessageAsync(message);
         }
     }
 }

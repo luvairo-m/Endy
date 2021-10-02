@@ -4,6 +4,10 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
+using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Enums;
+using DSharpPlus.Interactivity.EventHandling;
+using DSharpPlus.Interactivity.Extensions;
 using Endy.Bot.Commands;
 using Microsoft.Extensions.Configuration;
 
@@ -37,15 +41,16 @@ namespace Endy.Bot
 
             _commands.RegisterCommands<ServerCommands>();
 
-            _client.Ready += OnReady;
+            _client.Ready += Handlers.OnReady;
+            _commands.CommandErrored += Handlers.OnCommandErrored;
+
+            _client.UseInteractivity(new InteractivityConfiguration
+            {
+                Timeout = TimeSpan.FromSeconds(50)
+            });
+
             _client.ConnectAsync(new DiscordActivity { ActivityType = ActivityType.Watching, Name = "on butterflies"});
             Task.Delay(-1);
-        }
-
-        private Task OnReady(DiscordClient sender, ReadyEventArgs e)
-        {
-            Console.WriteLine("Logged as " + sender.CurrentUser.Username);
-            return Task.CompletedTask;
         }
     }
 }
