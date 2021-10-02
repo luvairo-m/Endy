@@ -24,7 +24,7 @@ namespace Endy.Bot
             {
                 AutoReconnect = true,
                 Token = _config["Bot:Auth:Token"],
-                Intents = DiscordIntents.All
+                Intents = DiscordIntents.All,
             });
 
             _commands = _client.UseCommandsNext(new CommandsNextConfiguration
@@ -35,7 +35,7 @@ namespace Endy.Bot
                 Services = services
             });
 
-            _commands.RegisterCommands<SocialCommands>();
+            _commands.RegisterCommands<ServerCommands>();
 
             _client.Ready += OnReady;
             _client.ConnectAsync(new DiscordActivity { ActivityType = ActivityType.Watching, Name = "on butterflies"});
