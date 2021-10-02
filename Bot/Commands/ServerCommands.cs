@@ -2,11 +2,7 @@
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using DSharpPlus.Interactivity;
-using DSharpPlus.Interactivity.Enums;
-using DSharpPlus.Interactivity.EventHandling;
-using DSharpPlus.Interactivity.Extensions;
-using System.Collections.Generic;
+using DSharpPlus.Exceptions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -31,10 +27,8 @@ namespace Endy.Bot.Commands
                     Text = $"Thanks for using Endy, {ctx.Member.Username}",
                     IconUrl = ctx.Member.AvatarUrl
                 },
-                Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail
-                {
-                    Url = member.AvatarUrl
-                }
+                Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail { Url = member.AvatarUrl }
+
             }
             .AddField("Name", member.Username, true)
             .AddField("Server name", member.DisplayName, true)
@@ -61,11 +55,13 @@ namespace Endy.Bot.Commands
         [RequirePermissions(Permissions.Administrator)]
         public async Task Clear(CommandContext ctx, int amount)
         {
-            await ctx.Channel.DeleteMessagesAsync(
+            try
+            {
+                await ctx.Channel.DeleteMessagesAsync(
                     await ctx.Channel.GetMessagesAsync(amount + 1).ConfigureAwait(false)
                 ).ConfigureAwait(false);
 
-            var message = await ctx.Channel.SendMessageAsync(
+                var message = await ctx.Channel.SendMessageAsync(
                     new DiscordEmbedBuilder
                     {
                         Color = DiscordColor.Blue,
@@ -73,8 +69,15 @@ namespace Endy.Bot.Commands
                     }
                 ).ConfigureAwait(false);
 
-            await Task.Delay(5000);
-            await ctx.Channel.DeleteMessageAsync(message);
+                await Task.Delay(5000);
+                await ctx.Channel.DeleteMessageAsync(message);
+
+            }
+            catch (BadRequestException)
+            {
+                await ctx.Channel.SendMessageAsync("you cannot delete messages that have a lifetime of more than 14 days")
+                    .ConfigureAwait(false);
+            }
         }
     }
 }
